@@ -1,0 +1,23 @@
+ Output from POLY-3, equilibrium =     1, label A0  , database: TCFE8   
+
+ Conditions:
+ P=1E5, N=1, T=957, W(C)=8.2E-3, W(MN)=5.2E-3, W(SI)=2E-3
+ DEGREES OF FREEDOM 0
+
+ Temperature    957.00 K (   683.85 C),  Pressure  1.000000E+05
+ Number of moles of components  1.00000E+00,  Mass in grams  5.41295E+01
+ Total Gibbs energy -3.91819E+04,  Enthalpy  2.25270E+04,  Volume  7.10910E-06
+
+ Component               Moles       M-Fraction  Activity   Potential  Ref.stat
+ C                       3.6654E-02  3.8049E-02 3.0445E-01 -9.4629E+03 SER     
+ FE                      9.5444E-01  9.9076E-01 6.9831E-03 -3.9501E+04 SER     
+ MN                      5.0818E-03  5.2752E-03 1.9046E-05 -8.6482E+04 SER     
+ SI                      3.8232E-03  3.9687E-03 1.2107E-10 -1.8169E+05 SER     
+
+ BCC_A2                      Status ENTERED     Driving force  0.0000E+00
+ Moles 8.5516E-01, Mass 4.7631E+01, Volume fraction 8.7770E-01  Mole fractions:
+ FE  9.92823E-01  SI  4.47072E-03  MN  2.18583E-03  C   5.20650E-04
+
+ CEMENTITE                   Status ENTERED     Driving force  0.0000E+00
+ Moles 1.4484E-01, Mass 6.4984E+00, Volume fraction 1.2230E-01  Mole fractions:
+ FE  7.27819E-01  C   2.50000E-01  MN  2.21808E-02  SI  7.50000E-13
