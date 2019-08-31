@@ -12,7 +12,7 @@ module_code = '304'
 
 if len(sys.argv) > 1:
     task_id = sys.argv[1]
-    messenger = utils.MessageFeedback(task_id,module_code)
+    messenger = utils.MessageFeedback(task_id,module_code,'FurGrainGrowth.info')
     exceptProcess.messenger = messenger  
     mongodb = exceptProcess.saferun(utils.Mongo,[],'other')
     data = exceptProcess.saferun(mongodb.query_taskid,[task_id],'mongodb_data_get_error')
