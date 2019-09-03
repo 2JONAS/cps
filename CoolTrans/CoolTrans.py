@@ -6,9 +6,11 @@ from utils import exceptProcess
 import sys
 import numpy as np
 import psutil
-
+import json
+import re
 
 module_code = '502'
+previous_code = '501'
 class COOTRANS(object):
     def __init__(self,mongodb,messenger,exceptProcess,FileManagement,task_id):
         self.mongodb = mongodb
@@ -16,7 +18,6 @@ class COOTRANS(object):
         self.exceptProcess = exceptProcess
         self.task_id = task_id
         self.num_per_border = 11
-        self.DefaultCase = self.dafaultcase()
         self.model_id = '502'
         self.root_dir = os.getcwd()
         self.file_group = FileManagement(os.path.join(self.root_dir,'module_3'))
@@ -26,6 +27,8 @@ class COOTRANS(object):
         self.data = exceptProcess.saferun(self.mongodb.query_taskid,[self.task_id],'mongodb_data_get_error')
         return self.data['input_data']['DefaultCase']
     def run(self):
+        self.DefaultCase = self.dafaultcase()
+        self.data.pop('_id')
         if self.DefaultCase == 0:
             self.run_single()
             self.num_per_border = 1
@@ -171,7 +174,53 @@ class COOTRANS(object):
         return out
 
 
-
+class UnionCoolTrans(COOTRANS):
+    def __init__(self,*arg, **kwarg):
+        super(UnionCoolTrans,self).__init__(*arg, **kwarg)
+        self.union = self.union_check()
+    def union_check(self):
+        return self.task_id[0] == '0'
+    def dafaultcase(self):
+        if self.union:
+            self.data = exceptProcess.saferun(self.mongodb.query_taskid,[self.task_id],'mongodb_data_get_error')
+            #
+            self.data['input_data'] = self.get_union_input_data()
+            TempTime_id = self.getTempTime_id()
+            border_center_data = self.get_center_border_data(TempTime_id)
+            self.data['input_data']['CENTER_t'] = border_center_data['CENTER_Time']
+            self.data['input_data']['CENTER_T'] = border_center_data['CENTER_Temp']
+            self.data['input_data']['BORDER_t'] = border_center_data['BORDER_Time']
+            self.data['input_data']['BORDER_T'] = border_center_data['BORDER_Temp']
+            return True
+        else:
+            return super(UnionCoolTrans,self).dafaultcase()
+    def getTempTime_id(self):
+        inqure_id = '_'.join(self.task_id.split('_')[:-1])+'_'
+        m = utils.Mongo()
+        id_list = []
+        for u in m.simulationOutput.find({'task_id': re.compile(inqure_id),'modelCode':previous_code}):
+            id_list.append(u['task_id'])
+        if len(id_list) == 0:
+            self.exceptProcess.error_run('mongodb_data_get_error')
+            raise Exception("previous mongodb was not found")
+        def sort_key(item):
+            return int(item.split('_')[-1])
+        id_list.sort(key=sort_key, reverse=True)
+        print(id_list[0])
+        return id_list[0]
+    def get_center_border_data(self,TempTime_id):
+        mongo = utils.Mongo(simulationInput='SimulationOutputData')
+        data = mongo.query_taskid(TempTime_id)
+        data.pop('_id')
+        if len(data['temp_data']['BORDER_Temp'][0]) != 11:
+            print('change')
+            data['temp_data']['BORDER_Temp'][0] = data['temp_data']['BORDER_Temp'][0][11:]
+        
+        return data['temp_data']
+    def get_union_input_data(self):
+        with open('union_input_data.json') as f:
+            load_dict = json.load(f)
+        return load_dict
 
 
 
@@ -186,7 +235,7 @@ if len(sys.argv) > 1:
     messenger = utils.MessageFeedback(task_id,module_code,'CoolTrans.info')
     exceptProcess.messenger = messenger  
     mongodb = exceptProcess.saferun(utils.Mongo,[],'other')
-    A = COOTRANS(mongodb,messenger,exceptProcess,utils.FileManagement,task_id)
+    A = UnionCoolTrans(mongodb,messenger,exceptProcess,utils.FileManagement,task_id)
     A.run()
 else:
     print('missing task_id')
