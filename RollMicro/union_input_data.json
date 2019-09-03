@@ -1,0 +1,17 @@
+{
+    "billet" : "LX82A",
+    "type" : 0,
+    "component" : [ 
+        0.82, 
+        0.52, 
+        0.2
+    ],
+    "t" : [],
+    "T" : [],
+    "size" : null,
+    "F" : [],
+    "DefaultCase" : 1,
+    "TaskGrainSize" : "3_1567239507250_00",
+    "TaskTempTime" : "4_1567495593064_00",
+    "TaskYingLi" : "0_1567475483899_02"
+}
