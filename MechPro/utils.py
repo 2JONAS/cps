@@ -13,7 +13,7 @@ class Mongo(object):
         self.simulationInput = self.mydb[simulationInput]
         self.simulationOutput = self.mydb[simulationOutput]
     def query_taskid(self,task_id):
-        myquery = {'_id':task_id}
+        myquery = {'task_id':task_id}
         mydoc = self.simulationInput.find(myquery)
         for x in mydoc:
             pass        
@@ -36,6 +36,8 @@ class MessageFeedback():
         line = [str(self.TaskId),str(self.ModelId),str(int(SimulationProgress*100)),str(ErrorNumber)]
         f.write(','.join(line))
         f.close()
+
+
     def del_line(self):
         f = open(self.file,'w+')
         line = ''
@@ -80,15 +82,24 @@ class exceptProcess(object):
         exceptProcess.messenger.info_write(0,exceptProcess.error_dict[error_name])
         time.sleep(60)
         exceptProcess.messenger.del_line()
-        exit(error_name)
+        raise Exception(error_name)
+        #exit(error_name)
     def saferun(f,input_value,error_name):
         '''input_value必须是个list,如果就是一个单值用[]括起来
         f是函数名'''
+        try:
+            for i in range(len(input_value)):
+                input_value[i].pop("_id")
+        except:
+            pass
         string = input_value.__str__()
         string = "f(" + string[1:-1] + ")"
+        #print("string",string)
         try:
+            #f()
             return eval(string)
-        except:
+        except Exception as e:
+            
             exceptProcess.error_run(error_name)      
         
         

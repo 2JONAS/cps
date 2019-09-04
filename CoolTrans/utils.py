@@ -82,7 +82,8 @@ class exceptProcess(object):
         exceptProcess.messenger.info_write(0,exceptProcess.error_dict[error_name])
         time.sleep(60)
         exceptProcess.messenger.del_line()
-        exit(error_name)
+        raise Exception(error_name)
+        #exit(error_name)
     def saferun(f,input_value,error_name):
         '''input_value必须是个list,如果就是一个单值用[]括起来
         f是函数名'''
