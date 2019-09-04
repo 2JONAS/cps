@@ -80,7 +80,7 @@ class exceptProcess(object):
               }
     def error_run(error_name):
         exceptProcess.messenger.info_write(0,exceptProcess.error_dict[error_name])
-        time.sleep(60)
+        time.sleep(5)
         exceptProcess.messenger.del_line()
         exit(error_name)
     def saferun(f,input_value,error_name):

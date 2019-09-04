@@ -52,6 +52,7 @@ class FurGrainGrowth(object):
         out_positions = []
         dict_ = {}
         task_id = positions['TempTime_id']
+        print(task_id)
         t, T = gettT(task_id)
         f_module_1_out = []
         f_module_1_out_map = []
@@ -76,9 +77,9 @@ class FurGrainGrowth(object):
         self.exceptProcess.saferun(self.mongodb.out_insert_dict, [self.data], 'insert_error')
         self.messenger.info_write(1)
 class UnionFurGrainGrowth(FurGrainGrowth):
-    def __init__(self,*arg, **kwarg):
-        super(UnionFurGrainGrowth,self).__init__(*arg, **kwarg)
-        self.union = self.union_check()
+    def __init__(self):
+        super(UnionFurGrainGrowth,self).__init__()
+        self.union = self.union_check
     def union_check(self):
         return self.task_id[0] == '0'
     def dafaultcase(self):
@@ -90,34 +91,46 @@ class UnionFurGrainGrowth(FurGrainGrowth):
             self.data['input_data']['TempTime_id'] = TempTime_id
             return True
         else:
-            return super(UnionFurGrainGrowth,self).dafaultcase()
+            super(UnionFurGrainGrowth,self).dafaultcase()
     def getTempTime_id(self):
-        try:
-            inqure_id = '_'.join(self.task_id.split('_')[:-1])+'_'
-            m = utils.Mongo()
-            id_list = []
-            for u in m.simulationOutput.find({'task_id': re.compile(inqure_id),'modelCode':previous_code}):
-                id_list.append(u['task_id'])
-            if len(id_list) == 0:
-                self.exceptProcess.error_run('mongodb_data_get_error')
-                raise Exception("previous mongodb was not found")
-            def sort_key(item):
-                return int(item.split('_')[-1])
-            id_list.sort(key=sort_key, reverse=True)
-            print(id_list[0])
-            return id_list[0]
-        except:
-            return '0_wangxin_test_03'
+        inqure_id = '_'.join(self.task_id.split('_')[:2])
+        m = utils.Mongo(simulationInput='SimulationOutputData')
+        id_list = []
+        for u in m.simulationInput.find({'task_id': re.compile('3_1567231156183_'),'modelCode':previous_code}):
+            id_list.append(u['task_id'])
+        if len(id_list) == 0:
+            self.exceptProcess.error_run('mongodb_data_get_error')
+            raise Exception("previous mongodb was not found")
+        def sort_key(item):
+            return int(item.split('_')[-1])
+        id_list.sort(key=sort_key, reverse=True)
+        return id_list[0]
     def get_union_input_data(self):
         with open('union_input_data.json') as f:
             load_dict = json.load(f)
         return load_dict
 if len(sys.argv) > 1:
-    task_id = sys.argv[1]
-    messenger = utils.MessageFeedback(task_id,module_code,'FurGrainGrowth.info')
-    exceptProcess.messenger = messenger
+    # grain_growth src id
+    task_id = '6_1567565056376_00'
     mongodb = exceptProcess.saferun(utils.Mongo,[],'other')
-    A = UnionFurGrainGrowth(mongodb,messenger,exceptProcess,utils.FileManagement,task_id)
-    A.run()
+    data = mongodb.query_taskid(task_id)
+    data.pop('_id')
+    for key in data:
+        print(key)
+    data['task_id'] = '0_wangxin_test_mechpro_05'
+    mongodb.simulationInput.insert_one(data) #input sheet
+    #temp
+    temp_id = '5_1567063522003_00'
+    mongo = utils.Mongo(simulationInput='SimulationOutputData')
+    data = mongo.query_taskid(temp_id)
+    data.pop('_id')
+    data['task_id'] = '0_wangxin_test_mechpro_03'
+    mongodb.out_insert_dict(data) #out sheet
+    data['task_id'] = '0_wangxin_test_mechpro_02'
+    data.pop('_id')
+    mongodb.out_insert_dict(data) # out sheet
+    print("cooltrans")
+
+
 else:
     print('missing task_id')
