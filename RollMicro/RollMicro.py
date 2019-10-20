@@ -82,16 +82,17 @@ class ROOLMICRO(object):
             k.vtk_extract()
             k.vtk2np()
             images.append(k.img)
-        I = []
-        images_len = len(images) - 2
-        images_gap = int(images_len / 6)
-        I.append(images[0])
-        index = 0
-        for i in range(6):
-            I.append(images[index])
-            index = index + images_gap
-        I.append(images[-1])
-        images = I
+        # 取消抽样
+        # I = []
+        # images_len = len(images) - 2
+        # images_gap = int(images_len / 6)
+        # I.append(images[0])
+        # index = 0
+        # for i in range(6):
+        #     I.append(images[index])
+        #     index = index + images_gap
+        # I.append(images[-1])
+        # images = I
         cwd = os.getcwd()
         image_files = []
         for index,image in enumerate(images):

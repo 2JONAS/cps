@@ -188,7 +188,8 @@ class KORN(object):
         k.tap_key(k.tab_key)
         k.tap_key(k.down_key,2)#选择 vtk asici
         k.tap_key(k.tab_key,2)
-        k.tap_key(k.right_key,1)# 选择 all
+        #不选择all
+        #k.tap_key(k.right_key,1)# 选择 all
         k.tap_key(k.tab_key,8)
         time.sleep(3)
         #m.click(756,800)  
