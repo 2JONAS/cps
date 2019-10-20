@@ -52,7 +52,7 @@ class COOTRANS(object):
         
     def calculate_V(self,position):
         begin = 0
-        for index in range(1,len(position)-1):
+        for index in range(1,len(position['T'][0])-2):
             if position['T'][0][index] < position['T'][0][index+1]:
                 break
         end = index
@@ -109,7 +109,10 @@ class COOTRANS(object):
             positions.append(dict_)
         return positions
     def insert_data(self):
-        self.data.pop("input_data")
+        try:
+            self.data.pop("input_data")
+        except:
+            pass
         self.data["output_data"] = self.out    
         exceptProcess.saferun(self.mongodb.out_insert_dict,[self.data],'insert_error')
         self.progress = 1

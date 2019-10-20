@@ -1,0 +1,16 @@
+go da
+sw tcfe
+de-sys fe c si mn
+rej p *
+res p fcc
+get
+go poly
+l-c
+s-c p=1e5 b=100 t=900 b(c)=%C_wt% b(si)=%Si_wt% b(mn)=%Mn_wt%
+c-e
+c-e
+show y(fcc,si#1) y(fcc,mn#1) y(fcc,c#2)
+l-e
+Site-fra-steel1.txt
+VXNS
+set-inter

@@ -46,6 +46,7 @@ class MechPro(object):
         self.data = exceptProcess.saferun(self.mongodb.query_taskid,[self.task_id],'mongodb_data_get_error')
         position = self.data['input_data']
         position = self.data['input_data']
+        
         position1 = [1] +  \
         [position['SorbiteSpacing'][0]] + \
         [position['SorbiteSize'][0]]+\
@@ -68,7 +69,11 @@ class MechPro(object):
         position2 = np.matrix(position2)
         return [position1,position2]
     def insert_data(self):
-        self.data.pop("input_data")
+        #print("insert data")
+        try:
+            self.data.pop("input_data")
+        except:
+            pass
         self.data["output_data"] = self.out    
         exceptProcess.saferun(self.mongodb.out_insert_dict,[self.data],'insert_error')
         self.progress = 1
@@ -81,18 +86,63 @@ class UnionMechPro(MechPro):
         self.previous_code_2 = '403'
     def union_check(self):
         return self.task_id[0] == '0'
+    def fault_data_pre(self):
+        position = self.data['input_data']
+        position = self.data['input_data']
+        
+        position1 = [1] +  \
+        [position['SorbiteSpacing'][0]] + \
+        [position['SorbiteSize'][0]]+\
+        [position['Fe'][0]] + \
+        [position['Sorbite'][0]] + \
+        [position['Cementite'][0]] + \
+        [position['size']] + \
+        position['component']
+        #print(len(position['component']))
+        #position2 = positfdion['component']+[position['SorbiteSpacing'][1]]+[position['SorbiteSize'][1]]+[position['size']]
+        position2 = [1] + \
+        [position['SorbiteSpacing'][1]] + \
+        [position['SorbiteSize'][1]]+\
+        [position['Fe'][1]] + \
+        [position['Sorbite'][1]] + \
+        [position['Cementite'][1]] + \
+        [position['size']] + \
+        position['component']
+        position1 = np.matrix(position1)
+        position2 = np.matrix(position2)
+        return [position1,position2]
     def run(self):
+        self.messenger.info_write(1)
         self.param_pre()
         if self.union:
-            self.data = exceptProcess.saferun(self.mongodb.query_taskid,[self.task_id],'mongodb_data_get_error')
+            self.data = dict(
+                task_id = self.task_id,
+                modelName = "MechPro",
+                modelCode = "601"
+            )
             self.out = []
-            for i in range(11):
-                position = self.get_union_input_data()
+            self.data['input_data'] = self.get_union_input_data()
+            
+            try:
+                a = f['x']
                 cooltran_id = self.get_cooltran_id()
+                print("0")
                 rollmicro_id = self.get_rollmicro_id()
-                position = self.data['input_data']
+                print("1")
+                cooltran_data = self.get_cooltran_data(cooltran_id)
+                print("2")
+                position['size'] = self.get_size(rollmicro_id)
+                print("3")
+            except:
+                self.position = self.fault_data_pre()
+                self.out = self.calculate(self.position)
+                self.insert_data()
+                return
+            for i in range(11):
+                
+                #position = self.data['input_data']
                 try:
-                    cooltran_data = self.get_cooltran_data(cooltran_id)
+                    
                     position['SorbiteSpacing'] =[ cooltran_data[i]['spacing_of_sorbite'][0],cooltran_data[i+11]['spacing_of_sorbite'][0]]
                     position['SorbiteSize'] = [cooltran_data[i]['soxhlet_size'],cooltran_data[i+11]['soxhlet_size']]
                     position['Fe'] = [cooltran_data[i]['phase_composition'][0],cooltran_data[i+11]['phase_composition'][0]]
@@ -102,10 +152,7 @@ class UnionMechPro(MechPro):
                     pass
                 
                 #position['component'] = [cooltran_data
-                try:
-                    position['size'] = self.get_size(rollmicro_id)
-                except:
-                    pass
+                
                 
                 position1 = [1] +  \
                 [position['SorbiteSpacing'][0]] + \
@@ -146,22 +193,26 @@ class UnionMechPro(MechPro):
             mongo = utils.Mongo(simulationInput='SimulationOutputData')
             data = mongo.query_taskid(task_id)
             output_data = data['output_data']
+            return output_data["size"]
         except:
             return 10
 
     def get_cooltran_id(self):
-        inqure_id = '_'.join(self.task_id.split('_')[:-1])+'_'
-        m = utils.Mongo()
-        id_list = []
-        for u in m.simulationOutput.find({'task_id': re.compile(inqure_id),'modelCode':self.previous_code_1}):
-            id_list.append(u['task_id'])
-        if len(id_list) == 0:
-            self.exceptProcess.error_run('mongodb_data_get_error')
-            raise Exception("previous mongodb was not found")
-        def sort_key(item):
-            return int(item.split('_')[-1])
-        id_list.sort(key=sort_key, reverse=True)
-        return id_list[0]
+        try:
+            inqure_id = '_'.join(self.task_id.split('_')[:-1])+'_'
+            m = utils.Mongo()
+            id_list = []
+            for u in m.simulationOutput.find({'task_id': re.compile(inqure_id),'modelCode':self.previous_code_1}):
+                id_list.append(u['task_id'])
+            if len(id_list) == 0:
+                #self.exceptProcess.error_run('mongodb_data_get_error')
+                raise Exception("previous mongodb was not found")
+            def sort_key(item):
+                return int(item.split('_')[-1])
+            id_list.sort(key=sort_key, reverse=True)
+            return id_list[0]
+        except:
+            return 0
     def get_rollmicro_id(self):
         try:
             inqure_id = '_'.join(self.task_id.split('_')[:-1])+'_'
@@ -170,7 +221,7 @@ class UnionMechPro(MechPro):
             for u in m.simulationOutput.find({'task_id': re.compile(inqure_id),'modelCode':self.previous_code_2}):
                 id_list.append(u['task_id'])
             if len(id_list) == 0:
-                self.exceptProcess.error_run('mongodb_data_get_error')
+                #self.exceptProcess.error_run('mongodb_data_get_error')
                 raise Exception("previous mongodb was not found")
             def sort_key(item):
                 return int(item.split('_')[-1])

@@ -1,0 +1,14 @@
+ Output from POLY-3, equilibrium =     1, label A0  , database: TCFE8   
+
+ Conditions:
+  P=1E5, B=100, T=900
+  DEGREES OF FREEDOM 3
+
+ Temperature    900.00 K (   626.85 C),  Pressure  1.000000E+05
+ Number of moles of components  0.00000E+00,  Mass in grams  0.00000E+00
+
+ Component               Moles       M-Fraction  Activity   Potential  Ref.stat
+ C                       0.0000E+00  0.0000E+00 1.0000E+00  0.0000E+00 SER     
+ FE                      0.0000E+00  0.0000E+00 1.0000E+00  0.0000E+00 SER     
+ MN                      0.0000E+00  0.0000E+00 1.0000E+00  0.0000E+00 SER     
+ SI                      0.0000E+00  0.0000E+00 1.0000E+00  0.0000E+00 SER     

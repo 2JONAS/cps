@@ -1,0 +1,78 @@
+go da
+sw tcfe
+de-sys fe c si mn
+rej p *
+res p fcc bcc cem
+get
+app mobfe
+de-sys fe c si mn
+rej p *
+res p fcc bcc cem
+get
+go dictra
+s-con global t 0 900-5*time; * n
+ent-region pearlite
+ent-grid pearlite 5e-10 lin 5
+ent-phase active pearlite lam
+bcc
+cem
+fcc
+0
+1;
+1000
+n
+0
+1;
+1000
+n
+0
+1;
+1000
+n
+2
+fe
+boundary
+auto
+boundary
+5.4e-14
+155000
+boundary
+5.4e-14
+85000
+y
+1e-6
+y
+ent-com
+pearlite
+ent-region austenite
+pearlite
+yes
+ent-grid austenite 4e-5 geo 30 1.5
+ent-phase active austenite matrix fcc
+ent-com
+austenite
+fcc
+fe
+site-fraction
+lin %MN% %MN%
+lin %C% %C%
+lin %SI% %SI%
+ent-geo 2
+s-s-time
+5
+yes
+0.1
+1e-7
+1e-7
+simulate
+post
+s-d-a x time
+s-d-a y t
+s-p-c interface last
+plot
+s-d-a y lam-spacing
+pearlite
+s-p-c interface pearlite upper
+plot
+make Pearlite-steel1.txt
+set-inter

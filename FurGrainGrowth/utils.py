@@ -2,7 +2,19 @@
 import math
 import os
 import time
-
+import logging
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)  # Log等级总开关
+log_path = os.path.dirname(os.getcwd()) + '/FurGrainGrowth/Logs/'
+log_name = log_path + 'info' + '.log'
+logfile = log_name
+fh = logging.FileHandler(logfile, mode='w')
+fh.setLevel(logging.DEBUG)  # 输出到file的log等级的开关
+# 第三步，定义handler的输出格式
+formatter = logging.Formatter("%(asctime)s - %(filename)s[line:%(lineno)d] - %(levelname)s: %(message)s")
+fh.setFormatter(formatter)
+# 第四步，将logger添加到handler里面
+logger.addHandler(fh)
 class Mongo(object):
 #    def __init__(self,myclient="mongodb://localhost:27017/",mydb="ustb",
 #                 simulationInput='simulationInput',simulationOutput='simulationOutput'):
@@ -108,24 +120,22 @@ class exceptProcess(object):
 def grainGrowth(t,T,Q_param=[0.82,0.52,0.2]):
     if len(t) != len(T):
         exceptProcess.error_run('curve_data_error')
-    k1 = 76500
+    k1 = 309000
     k2 = 0.2
-    for index,i in enumerate(Q_param):
-        Q_param[index] = float(i)
-    #Q = 92000
-    if len(Q_param) == 3:
-        Q = 88820 + 3000 * Q_param[0] + 1000 * Q_param[1] + 1000 * Q_param[2]
-    else:
-        Q = 88820 + 3000 * Q_param[0] + 1000 * Q_param[1] + 1000 * Q_param[2] + 1000 * Q_param[3]
     R = 8.314
     d = []
+    Q = 77000
     for i in range(len(t)):
-        t[i] = float(t[i]) * 60
-        T[i] = float(T[i]) + 273.15
-    d.append(k1*math.exp(-Q/(R*T[0])*math.pow(t[0],k2))) 
+        t[i] = float(t[i])
+        T[i] = float(T[i]) + 273
+    d.append(k1*math.exp(-Q/(R*T[0]))*(math.pow(t[0],k2))) 
     for i in range(1,len(t)):
         tstar = math.pow(d[i-1]/(k1*math.exp(-Q/(R*T[i]))),1/k2)
         d.append(k1*math.exp(-Q/(R*T[i]))*math.pow(tstar+t[i]-t[i-1],k2))
+    logging.info(d)
+    logging.info(t)
+    logging.info(T)
+
     return d[-1]
 def axisMap(x_min=0,x_max=3.5,interval=0.0001):
     def calculation_y(x):

@@ -1,0 +1,18 @@
+go da
+sw tcfe
+de-sys fe c mn si
+rej p *
+res p fcc bcc cem
+get
+go poly
+c-s com c
+special
+l-sta ,,,
+l-c
+s-c p=1e5 b=100 t=900 b(c)=%C_wt% b(si)=%Si_wt% b(mn)=%Mn_wt%
+c-e
+c-e
+l-e
+output_2.txt
+vxcs
+set-inter

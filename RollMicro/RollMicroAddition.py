@@ -26,7 +26,7 @@ def mcr(file_name,out_file_name):
     #m.move(500,500)
     #m.click(500,500)
     time.sleep(0.1)
-    m.click(500,500)
+    m.click(530,700)
     k.tap_key(k.tab_key)
     time.sleep(0.1)
     k.tap_key(k.tab_key)
@@ -82,7 +82,7 @@ def vtk(out_txt):
     
     img = np.array(img,dtype=np.int32)
     #print(img.shape)
-    img = img.reshape(400,400)
+    img = img.reshape(300,300)
     mask = np.zeros(img.shape)
     height,width = img.shape
     map_dict = {1:0,2:2,3:3,4:4}
@@ -222,7 +222,7 @@ class KORN(object):
     
         img = np.array(img,dtype=np.int32)
         #print(img.shape)
-        img = img.reshape(400,400)
+        img = img.reshape(300,300)
         self.img = img
         
     def np_count(self,img):

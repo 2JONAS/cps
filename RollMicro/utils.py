@@ -1,8 +1,8 @@
-import pymongo
+﻿import pymongo
 import math
 import os
 import time
-
+from gridfs import *
 class Mongo(object):
 #    def __init__(self,myclient="mongodb://localhost:27017/",mydb="ustb",
 #                 simulationInput='simulationInput',simulationOutput='simulationOutput'):
@@ -18,7 +18,22 @@ class Mongo(object):
         for x in mydoc:
             pass        
         return x
-       
+    def image_save(self,image_path):
+        imgput = GridFS(self.mydb)
+        datatmp = open(image_path, 'rb')
+        image_path = image_path.split('/')[-1]
+        f = image_path.split('.')
+        insertimg=imgput.put(datatmp,content_type=f[-1],filename=image_path)
+        
+        datatmp.close()
+        w = imgput.get(insertimg)
+        dict_ = {}
+        dict_['fileId'] = str(w._id)
+        dict_['filename'] = w.filename
+        dict_['length'] = w.length
+        #dict_['bucketName'] = 'fs'
+        dict_['otherInfo'] = None
+        return dict_
     def out_insert_dict(self,dict_):
         self.simulationOutput.insert_one(dict_)
     def input_insert_dict(self,dict_):

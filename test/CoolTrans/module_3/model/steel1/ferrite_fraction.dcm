@@ -1,0 +1,51 @@
+go da
+sw tcfe
+de-e fe mn si c
+rej p *
+res p fcc bcc
+get
+app mobfe
+de-e fe mn si c
+rej p *
+res p fcc bcc
+get
+go dictra
+s-con global t 0 %T1%-time*%V%; * n
+enter-region austenite
+enter-grid austenite 1e-5 linear 20
+enter-phase active austenite matrix fcc
+enter-phase inactive austenite no bcc
+fe
+1e-5
+closed
+enter-com austenite fcc fe w-p
+c linear %C_wt% %C_wt%
+mn linear %Mn_wt% %Mn_wt%
+si linear %Si_wt% %Si_wt%
+s-s-time %(T1-T0)/V%
+yes
+1
+1e-7
+1e-7
+s-s-c
+0
+1
+2
+no
+activities
+yes
+yes
+1.0 ,,,,
+simulate
+1e-8
+
+
+
+,,,,,,,,
+post
+s-d-a x time
+s-d-a y position austenite lower
+s-p-c interface austenite lower
+plot
+make %output%
+set-inter

@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import json
 import re
 module_code = '403'
+import logging
 class ROOLMICRO(object):
     def __init__(self,mongodb,messenger,exceptProcess,FileManagement,task_id):
         self.mongodb = mongodb
@@ -28,6 +29,7 @@ class ROOLMICRO(object):
     def run(self):
         self.DefaultCase = self.dafaultcase()
         if self.DefaultCase == 0:
+            self.daoci = 1
             self.run_default()
         else:
             self.run_case()
@@ -39,11 +41,13 @@ class ROOLMICRO(object):
         out_file_dir = os.path.join(self.file_group.module_run_dir,self.time_now)
         self.file_group.creat_run_dir(self.time_now)    
         # run micress
-        korn_files = self.run_micress(input_data,out_file_dir)
-        
+        print("input_data", input_data)
+        korn_files = self.run_micress([input_data],out_file_dir)
+        print('korn_file')
+        print('-'*20)
+        print(korn_files)
         # get out
         self.get_out(korn_files)
-        # insert data
         self.insert_data()
     def run_case(self):
         self.progress = 0.1
@@ -59,6 +63,7 @@ class ROOLMICRO(object):
         self.insert_data()
     def get_out(self,korn_files):
         self.out = {}
+        print("get_out")
         # get size
         # 建立实例，以最后一个result的路径
         k = rmadd.KORN(korn_files[-1],len(korn_files))
@@ -100,13 +105,22 @@ class ROOLMICRO(object):
     
     def default_data_pre(self):
         input_data =  self.data["input_data"]
-        ## 暂时设计读取npy的数据
-        input_data = []
-        x = np.load('input_data.npy')
-        for i in range(x.shape[-1]):
-        #for i in range(1):
-            input_data.append(x[:,i].tolist())
-        return input_data
+        dict_ = {}
+        T = np.array(input_data["T"])
+        F = np.array(input_data["F"])
+        T_means = np.mean(T)
+        F_means = np.mean(F[F>=3])
+        Strain_means = 0.15
+        print("F_means",F_means)
+        dict_["temperature"] = T_means
+        dict_["stress"] = F_means
+        dict_["strain"] = Strain_means
+        dict_["number"] = int(4*dict_["stress"]*dict_["strain"])
+        dict_["number1"] = int(dict_["number"] / 4)
+        dict_["number2"] = int(dict_["number"] / 4)
+        dict_["number3"] = int(dict_["number"] / 4)
+        dict_["number4"] = dict_["number"] - dict_["number1"] - dict_["number2"] - dict_["number3"]
+        return dict_
     def case_data_pre(self):
         input_data = self.data["input_data"]
         self.TaskGrainSize = input_data['TaskGrainSize'] 
@@ -196,7 +210,10 @@ class ROOLMICRO(object):
             YingBian.append(sum_bian/52)
         return YingLi,YingBian
     def insert_data(self):
-        self.data.pop("input_data")
+        try:
+            self.data.pop("input_data")
+        except:
+            pass
         self.data["output_data"] = self.out    
         exceptProcess.saferun(self.mongodb.out_insert_dict,[self.data],'insert_error')
         self.progress = 1
@@ -206,14 +223,19 @@ class ROOLMICRO(object):
             model_file =  [os.path.join(self.file_group.module_dir,'09_{0:02d}.txt'.format(i)) for i in range(1,10)]
         else:
             model_file =  [os.path.join(self.file_group.module_dir,'{0:02d}.txt'.format(i)) for i in range(1,27)]
+        if self.daoci == 1:
+            model_file = [os.path.join(self.file_group.module_dir,'default.txt')]
         korn_files = []
         for index,txt_in in enumerate(input_data): 
-            index = index + 1 
-            input_dict = {'TEMP':txt_in[0],'STRESS':txt_in[1],'STRAIN':txt_in[2],'TIME':txt_in[3]}
-            #if self.daoci == 9:
-                
-            
+            index = index + 1
+            if self.daoci == 1:
+                input_dict = txt_in
+            else:
+                input_dict = {'TEMP': txt_in[0], 'STRESS': txt_in[1], 'STRAIN': txt_in[2], 'TIME': txt_in[3]}
+
+            print("index",index)
             out_file = os.path.join(out_file_dir,'run{0:02d}.mec'.format(index))
+            print("input_dict",input_dict)
             rmadd.change_data_in_cm(model_file[index-1],out_file,input_dict)
             os.chdir(out_file_dir)
             os.system("start /wait cmd /c "+ 'run{0:02d}.mec'.format(index))
@@ -278,6 +300,9 @@ class UnionROOLMICRO(ROOLMICRO):
             self.data['input_data'] = self.get_union_input_data()
             TaskTempTime_id = self.getTaskTempTime_id()
             TaskYingLi_id = self.getTaskYingLi_id()
+            if TaskTempTime_id == "0" or  TaskYingLi_id == "0":
+                self.messenger.info_write(1)
+                raise Exception("lose preversious msg")
             self.data['input_data']['TaskTempTime'] = TaskTempTime_id
             self.data['input_data']['TaskYingLi_id'] = TaskYingLi_id
             return True
@@ -290,8 +315,8 @@ class UnionROOLMICRO(ROOLMICRO):
         for u in m.simulationOutput.find({'task_id': re.compile(inqure_id),'modelCode':self.previous_code_2}):
             id_list.append(u['task_id'])
         if len(id_list) == 0:
-            self.exceptProcess.error_run('mongodb_data_get_error')
-            raise Exception("previous mongodb was not found")
+            print("previous mongodb was not found")
+            return "0"
         def sort_key(item):
             return int(item.split('_')[-1])
         id_list.sort(key=sort_key, reverse=True)
@@ -306,8 +331,8 @@ class UnionROOLMICRO(ROOLMICRO):
         for u in m.simulationOutput.find({'task_id': re.compile(inqure_id),'modelCode':self.previous_code_1}):
             id_list.append(u['task_id'])
         if len(id_list) == 0:
-            self.exceptProcess.error_run('mongodb_data_get_error')
-            raise Exception("previous mongodb was not found")
+            print("previous mongodb was not found")
+            return "0"
         def sort_key(item):
             return int(item.split('_')[-1])
         id_list.sort(key=sort_key, reverse=True)
