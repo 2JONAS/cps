@@ -8,8 +8,10 @@ import sys
 import numpy as np
 import json
 import re
+from sklearn.externals import joblib
+skt_model = joblib.load("property.model")
 module_code = '601'
-
+TEST = True
 class MechPro(object):
     def __init__(self,mongodb,messenger,exceptProcess,task_id):
         self.mongodb = mongodb
@@ -38,10 +40,50 @@ class MechPro(object):
         self.param2 = np.matrix(param).T
         pass
     def calculate(self,position):
-        out1 = position[0]*self.param1
-        out2 = position[1]*self.param2
-        out = [out1[0,0],out2[0,0]]
-        return out
+        # out1 = position[0]*self.param1
+        # out2 = position[1]*self.param2
+        # out = [out1[0,0],out2[0,0]]
+        # print("out",out)
+        # return out
+        out1 = self.cal_dajie(position[0])
+        out2 = self.cal_no_dajie(position[1])
+        return [out1,out2]
+    def cal_dajie(self,position):
+        R0 = -120.87632
+        A = 165.26216
+        B = 11.55989
+        C = 0.01479
+        ceq,f,d = self.cal_dajie_mid_param(position)
+        RA = R0 + A*ceq + B*f + [C*(100 - f)]/(d**0.5)
+        st = self.get_dajie_st(ceq,position[0,3],position[0,4],position[0,1])
+        return [round(float(RA),2),round(float(st),2)]
+    def cal_no_dajie(self,position):
+        position = np.squeeze(position)
+        R0 = -120.87632
+        A = 165.26216
+        B = 11.55989
+        C = 0.01479
+        ceq,f,d = self.cal_no_dajie_mid_param(position)
+        RA = R0 + A*ceq + B*f + [C*(100 - f)]/(d**0.5)
+        st = self.get_no_dajie_se(ceq,position[0,3],position[0,4],position[0,1])
+        return [round(float(RA),2),round(float(st),2)]
+    def get_dajie_st(self,ceq,fe,so,so_space):
+        
+        return round(float(skt_model.predict([[ceq,fe,so,so_space]])),2)
+    def get_no_dajie_se(self,ceq,fe,so,so_space):
+        return self.get_dajie_st(ceq,fe,so,so_space)
+    
+        
+    def cal_dajie_mid_param(self,position):
+        p = position
+        ceq = p[0,7] + p[0,9] + (p[0,10] + 0 + 0)*5 + (p[0,14] + p[0,13])/15
+        f = p[0,3]/(p[0,5]+1e-6)
+        d = p[0,1]
+        return ceq,f,d
+    def cal_no_dajie_mid_param(self,position):
+        return self.cal_dajie_mid_param(position)
+    #def calc_mid_param(self,position)
+
     def data_pre(self):
         self.data = exceptProcess.saferun(self.mongodb.query_taskid,[self.task_id],'mongodb_data_get_error')
         position = self.data['input_data']
@@ -242,6 +284,10 @@ if len(sys.argv) > 1:
     exceptProcess.messenger = messenger  
     mongodb = exceptProcess.saferun(utils.Mongo,[],'other')
     A = UnionMechPro(mongodb,messenger,exceptProcess,task_id)
+    if TEST:
+        print("task id")
+        messenger.info_write(1)
+        return
     A.run()
 else:
     print('missing task_id')
