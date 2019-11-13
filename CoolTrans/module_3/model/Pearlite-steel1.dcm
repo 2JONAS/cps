@@ -18,7 +18,7 @@ bcc
 cem
 fcc
 0
-0.65;
+1.0;
 1000
 n
 0
@@ -47,7 +47,7 @@ pearlite
 ent-region austenite
 pearlite
 yes
-ent-grid austenite 10e-6 Lin 30
+ent-grid austenite 10e-6 Lin 20
 ent-phase active austenite matrix fcc
 ent-com
 austenite

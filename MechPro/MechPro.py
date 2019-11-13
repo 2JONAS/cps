@@ -335,14 +335,46 @@ class UnionMechPro(MechPro):
         with open('union_input_data.json') as f:
             load_dict = json.load(f)
         return load_dict
+class Temp(UnionMechPro):
+    def __init__(self, *arg, **kwarg):
+        super(Temp, self).__init__(*arg, **kwarg)
+    def cal_dajie(self, position):
+        R0 = -120.87632
+        A = 165.26216
+        B = 11.55989
+        C = 0.01479
+        ceq, f, d = self.cal_dajie_mid_param(position)
+        if d <= 0.158:
+            RA = R0 + A * ceq + B * f + [C * (100 - f)] / (d ** 0.5)
+            st = self.get_dajie_st(ceq, position[0, 3], position[0, 4], position[0, 1])
+            return [round(float(RA), 2), round(float(st), 2)]
+        else:
+            RA = 30 * ceq + 3.6 * pow(d,-0.5)
+            st = 750 * ceq + 140 * pow(d,-0.5)
+            return [round(float(RA), 2), round(float(st), 2)]
 
+    def cal_no_dajie(self, position):
+        position = np.squeeze(position)
+        R0 = -120.87632
+        A = 165.26216
+        B = 11.55989
+        C = 0.01479
+        ceq, f, d = self.cal_no_dajie_mid_param(position)
+        if d <= 0.158:
+            RA = R0 + A * ceq + B * f + [C * (100 - f)] / (d ** 0.5)
+            st = self.get_dajie_st(ceq, position[0, 3], position[0, 4], position[0, 1])
+            return [round(float(RA), 2), round(float(st), 2)]
+        else:
+            RA = 30 * ceq + 3.6 * pow(d,-0.5)
+            st = 750 * ceq + 140 * pow(d,-0.5)
+            return [round(float(RA), 2), round(float(st), 2)]
 
 if len(sys.argv) > 1:
     task_id = sys.argv[1]
     messenger = utils.MessageFeedback(task_id, module_code, 'MechPro.info')
     exceptProcess.messenger = messenger
     mongodb = exceptProcess.saferun(utils.Mongo, [], 'other')
-    A = UnionMechPro(mongodb, messenger, exceptProcess, task_id)
+    A = Temp(mongodb, messenger, exceptProcess, task_id)
     if TEST:
         print("task id")
         messenger.info_write(1)

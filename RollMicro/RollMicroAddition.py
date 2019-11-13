@@ -56,16 +56,16 @@ def mcr(file_name,out_file_name):
     
     
     
-    m.click(700,800)#最大化的时候对应的位置
+    m.click(490,696)#最大化的时候对应的位置
     
-    #m.click(520,380)
+
     
    
     #os.system('taskkill /f /im DPMICRESS_7.1.2_x64.exe')
     
     
     time.sleep(2)
-    #m.click(756,800)#最大化的时候对应的位置
+
     os.system('taskkill /f /im DPMICRESS_7.1.2_x64.exe')
     
     #print(1)
@@ -175,7 +175,6 @@ class KORN(object):
         m = PyMouse()
         k = PyKeyboard()
         time.sleep(0.1)
-        #m.click(500,500)
         #k.tap_key(k.shift_key)
         k.tap_key('f')
         time.sleep(0.1)
@@ -191,12 +190,10 @@ class KORN(object):
         #不选择all
         #k.tap_key(k.right_key,1)# 选择 all
         k.tap_key(k.tab_key,8)
-        time.sleep(3)
-        #m.click(756,800)  
-        m.click(822,1012)#最大化的时候对应的位置 
+        time.sleep(3)  
+        m.click(490,696)#最大化的时候对应的位置 
         #os.system('taskkill /f /im DPMICRESS_7.1.2_x64.exe')
         time.sleep(15)
-        #m.click(756,800)#最大化的时候对应的位置
         os.system('taskkill /f /im DPMICRESS_7.1.2_x64.exe')
         time.sleep(3)
         print(self.default_folder)
@@ -243,10 +240,12 @@ class KORN(object):
                 if row+1<height:
                     l.append(img[row+1,col])
                 mask[row,col] = map_dict[len(set(l))]
+        
         return self.caculate_maskVtk(mask)
     def caculate_maskVtk(self,mask,line_sample = 500):
         height,width = mask.shape
         def calculate_line(imgCanny,line_index):
+
             num = 0
             line = imgCanny[line_index]
             flag = 1

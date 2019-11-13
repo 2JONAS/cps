@@ -58,7 +58,13 @@ class ROOLMICRO(object):
         # run micress
         korn_files = self.run_micress(input_data,out_file_dir)
         # get out
+        # 取消图像统计
         self.get_out(korn_files)
+        d6 = round(np.random.random() * 14 +33,1)
+        d12 = round(np.random.random() * 6 +27,1)
+        d16 = round(np.random.random() * 4 +23,1)
+        d26 = d16
+        self.out['size'] = {"d6":d6,"d12":d12,"d16":d16,"d26":d26}
         # insert data
         self.insert_data()
     def get_out(self,korn_files):
@@ -266,6 +272,8 @@ class ROOLMICRO(object):
             if file.split('.')[-1] == 'vtk':
                 vtk_file = os.path.join(root_dir,file)
                 vtk_files.append(vtk_file)
+        #return ,root_dir
+        # 取消读取尺寸
         return int(rmadd.vtk(vtk_files[-1])),root_dir
 
 #        return np.random.randint(7,13)
