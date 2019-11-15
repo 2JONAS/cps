@@ -24,9 +24,9 @@ def mcr(file_name,out_file_name):
     m = PyMouse()
     k = PyKeyboard()
     #m.move(500,500)
-    #m.click(500,500)
+
     time.sleep(0.1)
-    m.click(530,700)
+    #m.click(530,700)
     k.tap_key(k.tab_key)
     time.sleep(0.1)
     k.tap_key(k.tab_key)
@@ -56,7 +56,7 @@ def mcr(file_name,out_file_name):
     
     
     
-    m.click(490,696)#最大化的时候对应的位置
+    #m.click(490,696)#最大化的时候对应的位置
     
 
     
