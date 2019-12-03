@@ -10,7 +10,7 @@ rej p *
 res p fcc bcc cem
 get
 go dictra
-s-con global t 0 %T0%-%V%*time; * n
+s-con global t 0 %TE%; * n
 ent-region pearlite
 ent-grid pearlite 5e-10 lin 5
 ent-phase active pearlite lam
@@ -38,7 +38,7 @@ boundary
 155000
 boundary
 5.4e-14
-105000
+155000
 y
 1e-6
 y
@@ -59,7 +59,7 @@ lin %SI% %SI%
 lin %C% %C%
 ent-geo 2
 s-s-time
-5
+1
 yes
 0.1
 1e-7
