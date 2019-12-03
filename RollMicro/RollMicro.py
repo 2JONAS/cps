@@ -62,7 +62,7 @@ class ROOLMICRO(object):
         d6 = round(np.random.random() * 14 +33,1)
         d12 = round(np.random.random() * 6 +27,1)
         d16 = round(np.random.random() * 4 +23,1)     
-        d26 = d16
+        d26 = round(np.random.random() * 4 +23,1)
         if self.daoci == 9:
             d12 = 0
             d16 = 0
