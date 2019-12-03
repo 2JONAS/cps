@@ -66,7 +66,7 @@ class ROOLMICRO(object):
         if self.daoci == 9:
             d12 = 0
             d16 = 0
-            d26 = 0
+            d26 = round(np.random.random() * 10 +30,1)
         self.out['size'] = {"d6":d6,"d12":d12,"d16":d16,"d26":d26}
         # insert data
 
