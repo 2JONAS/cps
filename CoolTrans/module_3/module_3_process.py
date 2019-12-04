@@ -82,7 +82,7 @@ def steel1_read_data_from_txt2(in_file_path,data_base):
                 
             second_vaule = float(whole[-2][-1])
             #value = (first_value+second_vaule)/2 * pow(10,6)
-            value = second_vaule * 1.288 * pow(10,6)
+            value = second_vaule  * pow(10,6)
             data_base['txt2_value'] = [str(value)]
 
 

@@ -8,7 +8,9 @@ import numpy as np
 import psutil
 import json
 import re
-
+import logging
+import logging
+logging.basicConfig(level = logging.DEBUG,format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 module_code = '502'
 previous_code = '501'
 class COOTRANS(object):
@@ -141,9 +143,64 @@ class COOTRANS(object):
         self.progress = self.progress + 0.25 / self.num_per_border / 2
         self.messenger.info_write(self.progress)
         
+
+        ## 增加TE
+        search_dict = {
+            18:938.65, 
+            17:939.60,
+            16:940.40, 
+            15:941.30, 
+            14:942.40, 
+            13:943.25, 
+            12:944.45, 
+            11:945.60, 
+            10:946.65, 
+            9:947.90, 
+            8:949.10, 
+        }
+        if int(position['V']) in search_dict:
+            position['TE'] = search_dict[int(position['V'])]
+        else:
+            position['TE'] = 949
+        cnt = 10
+        while not self.safe_run_get_txt2_value(position,out_file_dir):
+            cnt = cnt - 1
+            position['TE'] = position['TE'] + 0.05
+            if cnt == 0:
+                self.messenger.info_write(1)
+                exit(1)
+        logging.debug("计算成功，TE的值为{}".format(position["TE"]))
+        self.progress = self.progress + 0.25 / self.num_per_border / 2
+        self.messenger.info_write(self.progress)
+        
+        
+        spacing_of_sorbite = position['txt2_value']
+        soxhlet_size = float(spacing_of_sorbite[0]) * 18
+        r = module_3_process.ferrite_solubility(position,self.file_group.module_dir,self.file_group.module_run_dir,out_file_dir) #铁素体固溶度
+        self.progress = self.progress + 0.25 / self.num_per_border / 2    
+        self.messenger.info_write(self.progress)
+        fsc = module_3_process.calcu_fsc(position,self.file_group.module_dir,self.file_group.module_run_dir,out_file_dir)
+        phase_composition = fsc + [r]
+        out = {'spacing_of_sorbite':[str(round(float(spacing_of_sorbite[0]),3))],'soxhlet_size':round(soxhlet_size, 3),'phase_composition':phase_composition,'C':r[0],'MN':r[1],'SI':r[2],'V':str(round(float(position['V']),3)),'T1':str(round(float(position['T1']),3))}
+        return out
+    def safe_run_get_txt2_value(self,position,out_file_dir):
+        try:
+            self.get_txt2_value(position,out_file_dir)
+            return True
+        except Exception as e:
+            logging.debug("error repr(e)")
+            logging.debug("TE = {}".format(position["TE"]))
+            # 删除产生的文件
+            if os.path.exists(os.path.join(out_file_dir,"Pearlite-steel1.txt")):
+                os.remove(os.path.join(out_file_dir,"Pearlite-steel1.txt"))
+                logging.debug("产生的文件已被删除")
+            return False
+        
+    def get_txt2_value(self,position,out_file_dir):
         txt1_file = os.path.join(out_file_dir,'Site-fra-steel1.txt') 
         module_3_process.steel1_read_data_from_txt1(txt1_file,position)
         in_file = os.path.join(self.file_group.module_dir,'Pearlite-steel1.dcm')
+        cnt = 10
         out_file = os.path.join(out_file_dir,'Pearlite-steel1.dcm')
         module_3_process.change_data_in_cm(in_file,out_file,position)
         time.sleep(0.3)
@@ -160,22 +217,10 @@ class COOTRANS(object):
         if dead_wait == 1:
             print('create second file error')
         module_3_process.taskkill()
+        logging.debug("tc has been killed")
+        time.sleep(5)
         txt2_file = os.path.join(out_file_dir,'Pearlite-steel1.txt')
-        module_3_process.steel1_read_data_from_txt2(txt2_file,position)
-        self.progress = self.progress + 0.25 / self.num_per_border / 2
-        self.messenger.info_write(self.progress)
-        
-        
-        spacing_of_sorbite = position['txt2_value']
-        soxhlet_size = float(spacing_of_sorbite[0]) * 18
-        r = module_3_process.ferrite_solubility(position,self.file_group.module_dir,self.file_group.module_run_dir,out_file_dir) #铁素体固溶度
-        self.progress = self.progress + 0.25 / self.num_per_border / 2    
-        self.messenger.info_write(self.progress)
-        fsc = module_3_process.calcu_fsc(position,self.file_group.module_dir,self.file_group.module_run_dir,out_file_dir)
-        phase_composition = fsc + [r]
-        out = {'spacing_of_sorbite':[str(round(float(spacing_of_sorbite[0]),3))],'soxhlet_size':round(soxhlet_size, 3),'phase_composition':phase_composition,'C':r[0],'MN':r[1],'SI':r[2],'V':str(round(float(position['V']),3)),'T1':str(round(float(position['T1']),3))}
-        return out
-
+        module_3_process.steel1_read_data_from_txt2(txt2_file,position) 
 
 class UnionCoolTrans(COOTRANS):
     def __init__(self,*arg, **kwarg):
